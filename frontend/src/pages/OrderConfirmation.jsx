@@ -1,0 +1,88 @@
+import React, { useEffect, useState } from 'react';
+import { useLocation, Link } from 'react-router-dom';
+import { useCart } from '../content/CartContext';
+
+const OrderConfirmation = () => {
+  const location = useLocation();
+  const { clearCart } = useCart();
+  const [orderId, setOrderId] = useState(null);
+  const [paymentStatus, setPaymentStatus] = useState('pending'); // Can be 'success', 'failed', 'pending'
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('orderId');
+    const status = params.get('status');
+
+    if (id) {
+      setOrderId(id);
+    }
+    if (status) {
+      setPaymentStatus(status);
+    }
+
+    // Clear cart after successful order
+    if (status === 'success') {
+      clearCart();
+    }
+  }, [location.search, clearCart]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-amber-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 text-center">
+        {paymentStatus === 'success' ? (
+          <div className="text-green-600">
+            <svg className="mx-auto h-24 w-24 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-green-800">
+              Order Confirmed!
+            </h2>
+            <p className="mt-2 text-center text-lg text-green-700">
+              Thank you for your purchase. Your order has been placed successfully.
+            </p>
+            {orderId && (
+              <p className="mt-4 text-center text-md text-green-700">
+                Your Order ID: <span className="font-bold">{orderId}</span>
+              </p>
+            )}
+          </div>
+        ) : paymentStatus === 'failed' ? (
+          <div className="text-red-600">
+            <svg className="mx-auto h-24 w-24 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-red-800">
+              Payment Failed!
+            </h2>
+            <p className="mt-2 text-center text-lg text-red-700">
+              There was an issue processing your payment. Please try again.
+            </p>
+          </div>
+        ) : (
+          <div className="text-blue-600">
+            <svg className="mx-auto h-24 w-24 text-blue-500 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004 12c0 4.418 3.582 8 8 8s8-3.582 8-8S16.418 4 12 4c-1.112 0-2.172.235-3.107.654M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-blue-800">
+              Processing Your Order...
+            </h2>
+            <p className="mt-2 text-center text-lg text-blue-700">
+              Please wait while we confirm your payment.
+            </p>
+          </div>
+        )}
+        
+        <div className="mt-8">
+          <Link
+            to="/products"
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+          >
+            Continue Shopping
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default OrderConfirmation;
