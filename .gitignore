@@ -1,0 +1,18 @@
+# Node modules
+node_modules
+dist
+build
+.env
+
+# Frontend specific
+frontend/node_modules
+frontend/dist
+frontend/build
+frontend/.env
+
+# Backend specific
+backend/node_modules
+backend/dist
+backend/build
+backend/.env
+
