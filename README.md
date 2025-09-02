@@ -323,13 +323,6 @@ We love your input! We want to make contributing to this project as easy and tra
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📞 Contact
-
-**Chocolate Factory Team**
-- Email: hello@chocolatefactory.com
-- Website: https://chocolatefactory.com
-- GitHub: [@mrithip](https://github.com/mrithip)
-
 ---
 
 <div align="center">
