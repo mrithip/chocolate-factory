@@ -3,7 +3,7 @@ const router = express.Router();
 const asyncHandler = require('express-async-handler');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, admin } = require('../middleware/authMiddleware');
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -74,7 +74,7 @@ router.put('/:id/pay', protect, asyncHandler(async (req, res) => {
 // @desc    Get all orders (Admin only)
 // @route   GET /api/orders
 // @access  Private/Admin
-router.get('/', protect, asyncHandler(async (req, res) => {
+router.get('/', protect, admin, asyncHandler(async (req, res) => {
   const orders = await Order.find({}).populate('user', 'id name');
   res.json(orders);
 }));

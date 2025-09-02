@@ -92,8 +92,8 @@ router.post('/cart', protect, asyncHandler(async (req, res) => {
     const itemIndex = user.cart.findIndex(item => item.product.toString() === productId);
 
     if (itemIndex > -1) {
-      // Item exists, update quantity
-      user.cart[itemIndex].quantity = quantity;
+      // Item exists, increment quantity
+      user.cart[itemIndex].quantity += quantity; // Increment instead of overwrite
     } else {
       // Item does not exist, add new item
       user.cart.push({ product: productId, quantity });

@@ -9,12 +9,12 @@ const cartReducer = (state, action) => {
     case 'ADD_ITEM':
       // This ADD_ITEM is now primarily for local state update after API call
       // The API handles the actual DB logic for adding/updating
-      const existingItem = state.items.find(item => item.product._id === action.payload.product._id);
+      const existingItem = state.items.find(item => item.product._id.toString() === action.payload.product._id.toString());
       if (existingItem) {
         return {
           ...state,
           items: state.items.map(item =>
-            item.product._id === action.payload.product._id
+            item.product._id.toString() === action.payload.product._id.toString()
               ? { ...item, quantity: item.quantity + action.payload.quantity } // Add quantity from payload
               : item
           )
@@ -81,6 +81,7 @@ export const CartProvider = ({ children }) => {
         dispatch({ type: 'LOAD_CART', payload: data });
       } catch (error) {
         console.error('Failed to fetch cart from backend:', error);
+        // If fetching fails (e.g., token expired), clear local cart
         dispatch({ type: 'CLEAR_CART' });
       }
     } else {
@@ -94,7 +95,8 @@ export const CartProvider = ({ children }) => {
 
   const addItem = async (product, quantity = 1) => {
     if (!userInfo || !userInfo.token) {
-      dispatch({ type: 'ADD_ITEM', payload: { product, quantity } });
+      console.log('User not logged in. Cannot add item to cart.');
+      // Optionally, you could show a notification to the user here
       return;
     }
 
@@ -114,7 +116,7 @@ export const CartProvider = ({ children }) => {
 
   const removeItem = async (productId) => {
     if (!userInfo || !userInfo.token) {
-      dispatch({ type: 'REMOVE_ITEM', payload: productId });
+      console.log('User not logged in. Cannot remove item from cart.');
       return;
     }
 
@@ -138,7 +140,7 @@ export const CartProvider = ({ children }) => {
     }
 
     if (!userInfo || !userInfo.token) {
-      dispatch({ type: 'UPDATE_QUANTITY', payload: { productId, quantity } });
+      console.log('User not logged in. Cannot update item quantity in cart.');
       return;
     }
 
@@ -149,16 +151,27 @@ export const CartProvider = ({ children }) => {
           Authorization: `Bearer ${userInfo.token}`,
         },
       };
-      const { data } = await API.post('/users/cart', { productId, quantity }, config);
+      // Find current quantity to calculate delta
+      const currentItem = state.items.find(item => item.product._id === productId);
+      const currentQuantity = currentItem ? currentItem.quantity : 0;
+      const delta = quantity - currentQuantity; // 'quantity' here is the new desired quantity
+
+      // Send the delta to the backend
+      // The backend endpoint /users/cart with POST method expects { productId, quantity }
+      // The backend then adds this 'quantity' to the existing item's quantity.
+      // So, we should send the delta, not the absolute new quantity.
+      const { data } = await API.post('/users/cart', { productId, quantity: delta }, config);
+      // The backend response 'data' should contain the updated cart items.
+      // The existing dispatch({ type: 'LOAD_CART', payload: data }); will handle updating the state.
       dispatch({ type: 'LOAD_CART', payload: data });
     } catch (error) {
-      console.error('Failed to update quantity on backend:', error);
+      console.error('Failed to update quantity on backend:', error.response?.data?.message || error.message);
     }
   };
 
   const clearCart = async () => {
     if (!userInfo || !userInfo.token) {
-      dispatch({ type: 'CLEAR_CART' });
+      console.log('User not logged in. Cannot clear cart.');
       return;
     }
 

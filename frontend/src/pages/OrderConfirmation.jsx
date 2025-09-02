@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useCart } from '../content/CartContext';
+import { useAuth } from '../content/AuthContext'; // Import useAuth
+import API from '../utils/api'; // Import API utility
 
 const OrderConfirmation = () => {
   const location = useLocation();
   const { clearCart } = useCart();
+  const { user } = useAuth(); // Get user from AuthContext
   const [orderId, setOrderId] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState('pending'); // Can be 'success', 'failed', 'pending'
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [loadingOrder, setLoadingOrder] = useState(true);
+  const [orderError, setOrderError] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -24,10 +30,35 @@ const OrderConfirmation = () => {
     if (status === 'success') {
       clearCart();
     }
-  }, [location.search, clearCart]);
+
+    const fetchOrderDetails = async () => {
+      if (!id || authLoading || !user || !user.token) {
+        setLoadingOrder(false);
+        return;
+      }
+
+      try {
+        setLoadingOrder(true);
+        const config = {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        };
+        const { data } = await API.get(`/orders/${id}`, config);
+        setOrderDetails(data);
+        setLoadingOrder(false);
+      } catch (err) {
+        console.error('Failed to fetch order details:', err);
+        setOrderError(err.response?.data?.message || err.message);
+        setLoadingOrder(false);
+      }
+    };
+
+    fetchOrderDetails();
+  }, [location.search, clearCart, user]); // Add user to dependency array
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-amber-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 text-center">
         {paymentStatus === 'success' ? (
           <div className="text-green-600">
@@ -44,6 +75,28 @@ const OrderConfirmation = () => {
               <p className="mt-4 text-center text-md text-green-700">
                 Your Order ID: <span className="font-bold">{orderId}</span>
               </p>
+            )}
+
+            {loadingOrder ? (
+              <p className="mt-4 text-center text-md text-green-700">Fetching order details...</p>
+            ) : orderError ? (
+              <p className="mt-4 text-center text-md text-red-700">Error fetching order details: {orderError}</p>
+            ) : orderDetails && (
+              <div className="mt-8 p-4 bg-green-100 rounded-lg shadow-inner">
+                <h3 className="text-xl font-bold text-green-800 mb-4">Order Details</h3>
+                <div className="space-y-2">
+                  {orderDetails.products.map(item => (
+                    <div key={item.product._id} className="flex justify-between text-green-700">
+                      <span>{item.product.name} x {item.quantity}</span>
+                      <span>₹{(item.product.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="border-t border-green-300 pt-4 mt-4 flex justify-between text-lg font-bold text-green-800">
+                  <span>Total Amount:</span>
+                  <span>₹{orderDetails.totalAmount.toFixed(2)}</span>
+                </div>
+              </div>
             )}
           </div>
         ) : paymentStatus === 'failed' ? (
@@ -75,7 +128,7 @@ const OrderConfirmation = () => {
         <div className="mt-8">
           <Link
             to="/products"
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             Continue Shopping
           </Link>
