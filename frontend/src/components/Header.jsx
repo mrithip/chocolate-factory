@@ -42,6 +42,15 @@ const Header = () => {
               Products
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-200 transition-all duration-300 group-hover:w-full"></span>
             </Link>
+            {user && (
+              <Link
+                to="/orders"
+                className="text-lg font-semibold hover:text-amber-200 transition-all duration-300 relative group"
+              >
+                Orders
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-200 transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+            )}
             <Link
               to="/cart"
               className="text-lg font-semibold hover:text-amber-200 transition-all duration-300 relative group flex items-center space-x-2"
@@ -105,6 +114,9 @@ const Header = () => {
           <nav className="flex justify-center space-x-6">
             <Link to="/" className="text-lg font-semibold hover:text-amber-200 transition">Home</Link>
             <Link to="/products" className="text-lg font-semibold hover:text-amber-200 transition">Products</Link>
+            {user && (
+              <Link to="/orders" className="text-lg font-semibold hover:text-amber-200 transition">Orders</Link>
+            )}
             <Link to="/cart" className="text-lg font-semibold hover:text-amber-200 transition flex items-center space-x-2">
               <span>Cart ({cartCount})</span>
             </Link>

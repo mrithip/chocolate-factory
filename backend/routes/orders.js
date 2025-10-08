@@ -35,7 +35,7 @@ router.post('/', protect, asyncHandler(async (req, res) => {
 // @route   GET /api/orders/myorders
 // @access  Private
 router.get('/myorders', protect, asyncHandler(async (req, res) => {
-  const orders = await Order.find({ user: req.user._id }).populate('products.product', 'name image price');
+  const orders = await Order.find({ user: req.user._id }).populate('products.product', 'name image price').sort({ createdAt: -1 });
   res.json(orders);
 }));
 
