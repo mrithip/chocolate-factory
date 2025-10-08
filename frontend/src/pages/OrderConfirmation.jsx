@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+ import React, { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useCart } from '../content/CartContext';
 import { useAuth } from '../content/AuthContext'; // Import useAuth
@@ -96,6 +96,41 @@ const OrderConfirmation = () => {
                   <span>Total Amount:</span>
                   <span>₹{orderDetails.totalAmount.toFixed(2)}</span>
                 </div>
+              </div>
+            )}
+
+            {orderId && (
+              <div className="mt-6">
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await API.get(`/orders/${orderId}/invoice`, {
+                        responseType: 'blob', // Important for downloading files
+                      });
+
+                      // Create a download link
+                      const url = window.URL.createObjectURL(new Blob([response.data]));
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.setAttribute('download', `tax-invoice-${orderId}.pdf`);
+                      document.body.appendChild(link);
+                      link.click();
+
+                      // Clean up
+                      link.remove();
+                      window.URL.revokeObjectURL(url);
+                    } catch (error) {
+                      console.error('Failed to download invoice:', error);
+                      alert('Failed to download invoice. Please try again.');
+                    }
+                  }}
+                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download Tax Invoice
+                </button>
               </div>
             )}
           </div>
